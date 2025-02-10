@@ -1,0 +1,82 @@
+{% load static %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProductManager</title>
+  <link rel="stylesheet" href="{% static 'css/productsmanager.css' %}">
+</head>
+<body>
+  <div class="container">
+    <h2>{{ title }}</h2>
+    <div class="select-wrapper">
+      <select onchange="window.location.href=this.value;">
+        <option value="">Выбрано ({{ product.id }}) {{ title }}</option>
+        {% for item in products_list %}
+          {% if product.id == item.id %}
+            <option value="/django-admin/products_manager/tempproduct/{{ item.product_id }}/images/" style="background-color: rgb(100, 221, 100);">({{ item.id }}) {{ item.title }} (Текущий)</option>
+          {% else %}
+            <option value="/django-admin/products_manager/tempproduct/{{ item.product_id }}/images/">({{ item.id }}) {{ item.title }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="image-container">
+        {% for image in images %}
+          <div class="image-card">
+            <img src="{{ image.file.url }}" alt="{{ image.caption }}" class="image-card-img">
+            <div class="image-settings">
+              <div class="image-settings-rows">
+                <div class="setting-item">
+                  <label for="remove_bg_{{ image.id }}">Удалить фон:</label>
+                  <input type="checkbox" id="remove_bg_{{ image.id }}" name="remove_bg_{{ image.id }}" {% if image.remove_bg %}checked{% endif %}>
+                </div>
+                <div class="setting-item">
+                  <label for="remove_wm_{{ image.id }}">Удалить водяной знак:</label>
+                  <input type="checkbox" id="remove_wm_{{ image.id }}" name="remove_wm_{{ image.id }}" {% if image.remove_wm %}checked{% endif %}>
+                </div>
+                <div class="setting-item">
+                  <label for="delete_image_{{ image.id }}">Удалить:</label>
+                  <input type="checkbox" id="delete_image_{{ image.id }}" name="delete_images" value="{{ image.id }}">
+                </div>
+                <div class="setting-item">
+                  <label for="zoom_scale_{{ image.id }}">Отдаление: </label>
+                  <input type="text" id="zoom_scale_{{ image.id }}" name="zoom_scale_{{ image.id }}" value="{{ image.zoom_scale }}">
+                </div>
+                <div class="setting-item">
+                  <label for="sort_order_{{ image.id }}">Порядковый номер:</label>
+                  <input type="number" id="sort_order_{{ image.id }}" name="sort_order_{{ image.id }}" value="{{ image.sort_order }}">
+                </div>
+              </div>
+              <div class="image_sizes">
+                <p>Ширина: {{ image.width }} px</p>
+                <p>Высота: {{ image.height }} px</p>
+                {% if images_quality_dict|get_item:image.id|get_item_list:0 == 'Хорошее качество' %}
+                  <p style="color: green;">{{ images_quality_dict|get_item:image.id|get_item_list:0 }}</p>
+                {% else %}
+                  <p style="color: red;">{{ images_quality_dict|get_item:image.id|get_item_list:0 }}</p>
+                {% endif %}
+                {% if images_quality_dict|get_item:image.id|get_item_list:1 == 'Размеры хорошо вписываются в сайт' %}
+                  <p style="color: green;">{{ images_quality_dict|get_item:image.id|get_item_list:1 }}</p>
+                {% else %}
+                  <p style="color: red;">{{ images_quality_dict|get_item:image.id|get_item_list:1 }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <br>
+      <div class="button-container">
+        <button type="submit" name="delete_selected_images" class="delete-button">Удалить выбранные изображения</button>
+        <button type="submit" class="save-changes-button">Сохранить изменения</button>
+      </div>      
+    </form>
+  </div>
+</body>
+</html>
